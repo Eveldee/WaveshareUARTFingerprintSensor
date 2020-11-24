@@ -141,6 +141,13 @@ namespace WaveshareUARTFingerprintSensor
             return true;
         }
 
+        public uint QuerySerialNumber()
+        {
+            (byte first, byte second, byte third) = SendAndReceiveRaw(CommandType.QuerySerialNumber, 0, 0, 0);
+
+            return Utils.Merge(first, second, third);
+        }
+
         public bool TryGetUserCount(out ushort count)
         {
             if (TrySendAndReceive(CommandType.QueryUserCount, 0, 0, 0, out var response, 1000))
