@@ -102,6 +102,22 @@ namespace WaveshareUARTFingerprintSensor
             return (buffer[2], buffer[3], (ResponseType)buffer[4]);
         }
 
+        private bool TrySendAndReceive(CommandType commandType, byte first, byte second, byte third, out (byte first, byte second, ResponseType responseType) response, int timeout = DefaultTimeout)
+        {
+            try
+            {
+                response = SendAndReceive(commandType, first, second, third, timeout);
+            }
+            catch (Exception)
+            {
+                response = default;
+
+                return false;
+            }
+
+            return true;
+        }
+
         /*
         private void Send(CommandType commandType, byte first, byte second, byte third)
         {
@@ -138,11 +154,18 @@ namespace WaveshareUARTFingerprintSensor
 
         public bool TryGetUserCount(out ushort count)
         {
-            (byte countHigh, byte countLow, ResponseType response) = SendAndReceive(CommandType.QueryUserCount, 0, 0, 0);
+            if (TrySendAndReceive(CommandType.QueryUserCount, 0, 0, 0, out var response))
+            {
+                (byte countHigh, byte countLow, ResponseType responseType) = response;
 
-            count = Utils.Merge(countHigh, countLow);
+                count = Utils.Merge(countHigh, countLow);
 
-            return response == ResponseType.Success;
+                return responseType == ResponseType.Success;
+            }
+
+            count = default;
+
+            return false;
         }
 
         public void Sleep()
