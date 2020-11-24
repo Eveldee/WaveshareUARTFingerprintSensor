@@ -19,7 +19,8 @@ namespace WaveshareUARTFingerprintSensor
         public const string SecondarySerialPort = "/dev/ttyS0";
         public const int DefaultTimeout = 10_000;
 
-        public event Action<FingerprintSensor> Waked;
+        public event WakedEventHandler Waked;
+        public delegate void WakedEventHandler(FingerprintSensor sender);
 
         public string PortName { get; }
 
