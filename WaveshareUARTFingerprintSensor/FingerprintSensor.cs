@@ -66,7 +66,7 @@ namespace WaveshareUARTFingerprintSensor
 
             for (int i = 1; i < 6; i++)
             {
-                checksum += data[i];
+                checksum ^= data[i];
             }
 
             return checksum;
