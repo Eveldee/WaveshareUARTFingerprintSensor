@@ -19,10 +19,9 @@ namespace WaveshareUARTFingerprintSensor.Sample
 
             sensor.Start();
 
-            if (sensor.TryGetUserCount(out ushort count))
-            {
-                Console.WriteLine(count);
-            }
+            sensor.Waked += s => sensor.Wake();
+
+            sensor.Sleep();
 
             Console.WriteLine("End");
 

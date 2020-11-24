@@ -19,6 +19,8 @@ namespace WaveshareUARTFingerprintSensor
         public const string SecondarySerialPort = "/dev/ttyS0";
         public const int DefaultTimeout = 10_000;
 
+        public event Action<FingerprintSensor> Waked;
+
         public string PortName { get; }
 
         private const byte PacketSeparator = 0xF5;
@@ -169,11 +171,16 @@ namespace WaveshareUARTFingerprintSensor
             _rstPin.Write(GpioPinValue.Low);
         }
 
+        public void Wake()
+        {
+            _rstPin.Write(GpioPinValue.High);
+        }
+
         private void OnWake()
         {
             if (_wakePin.Read())
             {
-                Console.WriteLine("Sensor WAKE signal received");
+                Waked?.Invoke(this);
             }
         }
 
