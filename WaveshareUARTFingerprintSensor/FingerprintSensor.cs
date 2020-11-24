@@ -102,6 +102,13 @@ namespace WaveshareUARTFingerprintSensor
             return (buffer[2], buffer[3], (ResponseType)buffer[4]);
         }
 
+        private (byte first, byte second, byte third) SendAndReceiveRaw(CommandType commandType, byte first, byte second, byte third, int timeout = DefaultTimeout)
+        {
+            (byte f, byte s, ResponseType response) = SendAndReceive(commandType, first, second, third, timeout);
+
+            return (f, s, (byte)response);
+        }
+
         private bool TrySendAndReceive(CommandType commandType, byte first, byte second, byte third, out (byte first, byte second, ResponseType responseType) response, int timeout = DefaultTimeout)
         {
             try
@@ -118,6 +125,21 @@ namespace WaveshareUARTFingerprintSensor
             return true;
         }
 
+        private bool TrySendAndReceiveRaw(CommandType commandType, byte first, byte second, byte third, out (byte first, byte second, byte third) response, int timeout = DefaultTimeout)
+        {
+            try
+            {
+                response = SendAndReceiveRaw(commandType, first, second, third, timeout);
+            }
+            catch (Exception)
+            {
+                response = default;
+
+                return false;
+            }
+
+            return true;
+        }
 
         public bool TryGetUserCount(out ushort count)
         {
