@@ -17,6 +17,7 @@ namespace WaveshareUARTFingerprintSensor
     {
         public const string PrimarySerialPort = "/dev/ttyAMA0";
         public const string SecondarySerialPort = "/dev/ttyS0";
+        public const int DefaultTimeout = 10_000;
 
         public string PortName { get; }
 
@@ -68,13 +69,16 @@ namespace WaveshareUARTFingerprintSensor
             return checksum;
         }
 
-        private (byte first, byte second, ResponseType responseType) SendAndReceive(CommandType commandType, byte first, byte second, byte third)
+        private (byte first, byte second, ResponseType responseType) SendAndReceive(CommandType commandType, byte first, byte second, byte third, int timeout = DefaultTimeout)
         {
             // Command packet
             byte[] buffer = { PacketSeparator, (byte)commandType, first, second, third, 0, 0, PacketSeparator };
 
             lock (_lock)
             {
+                // Set timeout
+                _serialPort.WriteTimeout = timeout;
+                _serialPort.ReadTimeout = timeout;
 
                 // Checksum
                 buffer[6] = ComputeChecksum(buffer);
