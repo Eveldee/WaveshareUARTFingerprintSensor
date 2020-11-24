@@ -121,7 +121,7 @@ namespace WaveshareUARTFingerprintSensor
 
         public bool TryGetUserCount(out ushort count)
         {
-            if (TrySendAndReceive(CommandType.QueryUserCount, 0, 0, 0, out var response))
+            if (TrySendAndReceive(CommandType.QueryUserCount, 0, 0, 0, out var response, 1000))
             {
                 (byte countHigh, byte countLow, ResponseType responseType) = response;
 
