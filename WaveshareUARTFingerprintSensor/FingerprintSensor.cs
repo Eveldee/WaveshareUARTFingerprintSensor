@@ -118,39 +118,6 @@ namespace WaveshareUARTFingerprintSensor
             return true;
         }
 
-        /*
-        private void Send(CommandType commandType, byte first, byte second, byte third)
-        {
-            // Command packet
-            byte[] buffer = { PacketSeparator, (byte)commandType, first, second, third, 0, 0, PacketSeparator };
-
-            // Checksum
-            buffer[6] = ComputeChecksum(buffer);
-
-            _serialPort.Write(buffer, 0, buffer.Length);
-        }
-
-        private (byte first, byte second, byte third) Receive(CommandType commandType)
-        {
-            // Response buffer
-            var buffer = new byte[8];
-
-            // Response
-            _serialPort.Read(buffer, 0, buffer.Length);
-
-            if (buffer[0] != PacketSeparator || buffer[7] != PacketSeparator || buffer[1] != (byte)commandType)
-            {
-                throw new InvalidDataException("Invalid response from the sensor");
-            }
-
-            if (buffer[6] != ComputeChecksum(buffer))
-            {
-                throw new InvalidDataException("Invalid checksum");
-            }
-
-            return (buffer[2], buffer[3], buffer[4]);
-        }
-        */
 
         public bool TryGetUserCount(out ushort count)
         {
