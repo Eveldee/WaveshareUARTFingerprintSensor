@@ -18,6 +18,7 @@ namespace WaveshareUARTFingerprintSensor
         public const string PrimarySerialPort = "/dev/ttyAMA0";
         public const string SecondarySerialPort = "/dev/ttyS0";
         public const int DefaultTimeout = 10_000;
+        public const int MaxUserID = 0xFFF;
 
         public event WakedEventHandler Waked;
         public delegate void WakedEventHandler(FingerprintSensor sender);
@@ -175,6 +176,36 @@ namespace WaveshareUARTFingerprintSensor
         public void Wake()
         {
             _rstPin.Write(GpioPinValue.High);
+        }
+
+        public ResponseType AddFingerprint(ushort userID, UserPermission userPermission)
+        {
+            if (userID > MaxUserID)
+            {
+                return ResponseType.Full;
+            }
+
+            CommandType[] commands = { CommandType.AddFingerprint1, CommandType.AddFingerprint2, CommandType.AddFingerprint3 };
+            (byte idHigh, byte idLow) = Utils.Split(userID);
+
+            foreach (var command in commands)
+            {
+                if (TrySendAndReceive(command, idHigh, idLow, (byte)userPermission, out var response))
+                {
+                    if (response.responseType != ResponseType.Success)
+                    {
+                        return response.responseType;
+                    }
+                }
+                else
+                {
+                    return ResponseType.Timeout;
+                }
+
+                Thread.Sleep(50);
+            }
+
+            return ResponseType.Success;
         }
 
         private void OnWake()

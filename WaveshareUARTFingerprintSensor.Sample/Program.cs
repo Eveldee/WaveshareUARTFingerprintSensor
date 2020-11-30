@@ -19,9 +19,9 @@ namespace WaveshareUARTFingerprintSensor.Sample
 
             sensor.Start();
 
-            sensor.Waked += s => sensor.Wake();
+            Console.WriteLine("Adding fingerprint");
 
-            sensor.Sleep();
+            var response = sensor.AddFingerprint(40, UserPermission.Level3);
 
             Console.WriteLine("End");
 
