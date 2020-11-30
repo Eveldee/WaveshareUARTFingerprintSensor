@@ -1,6 +1,6 @@
 ﻿namespace WaveshareUARTFingerprintSensor
 {
-    public enum UserPermission
+    public enum UserPermission : byte
     {
         Level1 = 1,
         Level2 = 2,

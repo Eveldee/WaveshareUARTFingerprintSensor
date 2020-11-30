@@ -312,6 +312,26 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        public bool DeleteAllUsers()
+        {
+            if (TrySendAndReceive(CommandType.DeleteAllUsers, 0, 0, 0, out var response, 1000))
+            {
+                return response.responseType == ResponseType.Success;
+            }
+
+            return false;
+        }
+
+        public bool DeleteAllUsersWithPermission(UserPermission userPermission)
+        {
+            if (TrySendAndReceive(CommandType.DeleteAllUsers, 0, 0, (byte)userPermission, out var response, 1000))
+            {
+                return response.responseType == ResponseType.Success;
+            }
+
+            return false;
+        }
+
         private void OnWake()
         {
             if (_wakePin.Read())
