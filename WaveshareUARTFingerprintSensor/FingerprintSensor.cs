@@ -300,6 +300,17 @@ namespace WaveshareUARTFingerprintSensor
             }
         }
 
+        public bool DeleteUser(ushort userID)
+        {
+            (byte high, byte low) = Utils.Split(userID);
+
+            if (TrySendAndReceive(CommandType.DeleteUser, high, low, 0, out var response, 1000))
+            {
+                return response.responseType == ResponseType.Success;
+            }
+
+            return false;
+        }
 
         private void OnWake()
         {
