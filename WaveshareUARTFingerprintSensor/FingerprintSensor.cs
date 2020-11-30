@@ -253,6 +253,54 @@ namespace WaveshareUARTFingerprintSensor
             return ResponseType.Success;
         }
 
+        public (ResponseType responseType, byte[] eigenvalues) AddFingerprintAndAcquireEigenvalues(ushort userID, UserPermission userPermission)
+        {
+            if (userID > MaxUserID)
+            {
+                return (ResponseType.Full, null);
+            }
+
+            CommandType[] commands = { CommandType.AddFingerprint1, CommandType.AddFingerprint2 };
+            (byte idHigh, byte idLow) = Utils.Split(userID);
+
+            foreach (var command in commands)
+            {
+                if (TrySendAndReceive(command, idHigh, idLow, (byte)userPermission, out var loopResponse))
+                {
+                    if (loopResponse.responseType != ResponseType.Success)
+                    {
+                        return (loopResponse.responseType, null);
+                    }
+                }
+                else
+                {
+                    return (ResponseType.Timeout, null);
+                }
+
+                Thread.Sleep(50);
+            }
+
+            if (TrySendAndReceive(CommandType.AddAndAcquireFingerprint, 0, 0, 0, out var response))
+            {
+                if (response.responseType != ResponseType.Success)
+                {
+                    return (response.responseType, null);
+                }
+
+                ushort length = Utils.Merge(response.first, response.second);
+
+                var data = ReadData(length);
+                var eigenvalues = data.Skip(3).ToArray();
+
+                return (ResponseType.Success, eigenvalues);
+            }
+            else
+            {
+                return (ResponseType.Timeout, null);
+            }
+        }
+
+
         private void OnWake()
         {
             if (_wakePin.Read())
