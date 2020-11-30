@@ -211,18 +211,6 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
-        public void Sleep()
-        {
-            _sleeping = true;
-            _rstPin.Write(GpioPinValue.Low);
-        }
-
-        public void Wake()
-        {
-            _sleeping = false;
-            _rstPin.Write(GpioPinValue.High);
-        }
-
         public ResponseType AddFingerprint(ushort userID, UserPermission userPermission)
         {
             if (userID > MaxUserID)
@@ -332,7 +320,6 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
-
         /// <summary>
         /// Read a fingerprint and check if it matches with the specified user
         /// </summary>
@@ -371,6 +358,19 @@ namespace WaveshareUARTFingerprintSensor
 
             return false;
         }
+
+        public void Sleep()
+        {
+            _sleeping = true;
+            _rstPin.Write(GpioPinValue.Low);
+        }
+
+        public void Wake()
+        {
+            _sleeping = false;
+            _rstPin.Write(GpioPinValue.High);
+        }
+
         private void OnWake()
         {
             if (_wakePin.Read())
