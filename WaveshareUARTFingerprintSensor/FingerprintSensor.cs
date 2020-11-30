@@ -359,6 +359,25 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        public bool TryQueryPermission(ushort userID, out UserPermission userPermission)
+        {
+            (byte high, byte low) = Utils.Split(userID);
+
+            if (TrySendAndReceive(CommandType.QueryPermission, high, low, 0, out var reponse, 1000))
+            {
+                if (reponse.responseType != ResponseType.NoUser)
+                {
+                    userPermission = (UserPermission)reponse.responseType;
+
+                    return true;
+                }
+            }
+
+            userPermission = default;
+
+            return true;
+        }
+
         public void Sleep()
         {
             _sleeping = true;
