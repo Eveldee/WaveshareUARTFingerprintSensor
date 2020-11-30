@@ -28,11 +28,11 @@ namespace WaveshareUARTFingerprintSensor
         private const byte PacketSeparator = 0xF5;
 
         private SerialPort _serialPort;
-        private int _wakePinNumber;
-        private int _rstPinNumber;
+        private readonly int _wakePinNumber;
+        private readonly int _rstPinNumber;
         private IGpioPin _wakePin;
         private IGpioPin _rstPin;
-        private object _lock = new object();
+        private readonly object _lock = new object();
 
         public FingerprintSensor(string portName, int wakePin = 23, int rstPin = 24)
         {
