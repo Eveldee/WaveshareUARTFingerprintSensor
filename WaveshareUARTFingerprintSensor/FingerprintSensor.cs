@@ -332,6 +332,45 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+
+        /// <summary>
+        /// Read a fingerprint and check if it matches with the specified user
+        /// </summary>
+        /// <param name="userID">A registered user ID</param>
+        /// <returns></returns>
+        public bool Comparison11(ushort userID)
+        {
+            (byte high, byte low) = Utils.Split(userID);
+
+            if (TrySendAndReceive(CommandType.Comparison11, high, low, 0, out var response, 1000))
+            {
+                return response.responseType == ResponseType.Success;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Read a fingerprint and check if it match with any registered user
+        /// </summary>
+        /// <param name="userInfo">The matched user info</param>
+        /// <returns></returns>
+        public bool TryComparison1N(out (ushort userID, UserPermission permission) userInfo)
+        {
+            if (TrySendAndReceive(CommandType.Comparison11, 0, 0, 0, out var response, 1000))
+            {
+                if (response.responseType != ResponseType.NoUser && response.responseType != ResponseType.Timeout)
+                {
+                    userInfo = (Utils.Merge(response.first, response.second), (UserPermission)response.responseType);
+
+                    return true;
+                }
+            }
+
+            userInfo = default;
+
+            return false;
+        }
         private void OnWake()
         {
             if (_wakePin.Read())
