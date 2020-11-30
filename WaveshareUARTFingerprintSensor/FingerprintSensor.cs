@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Unosquare.RaspberryIO;
 using Unosquare.RaspberryIO.Abstractions;
 using Unosquare.WiringPi;
+using WaveshareUARTFingerprintSensor.Exceptions;
 
 namespace WaveshareUARTFingerprintSensor
 {
@@ -32,6 +33,7 @@ namespace WaveshareUARTFingerprintSensor
         private readonly int _rstPinNumber;
         private IGpioPin _wakePin;
         private IGpioPin _rstPin;
+        private bool _sleeping = false;
         private readonly object _lock = new object();
 
         public FingerprintSensor(string portName, int wakePin = 23, int rstPin = 24)
@@ -75,6 +77,11 @@ namespace WaveshareUARTFingerprintSensor
 
         private (byte first, byte second, ResponseType responseType) SendAndReceive(CommandType commandType, byte first, byte second, byte third, int timeout = DefaultTimeout)
         {
+            if (_sleeping)
+            {
+                throw new SensorStateException(SensorStateException.SensorSleepingMessage);
+            }
+
             // Command packet
             byte[] buffer = { PacketSeparator, (byte)commandType, first, second, third, 0, 0, PacketSeparator };
 
@@ -170,11 +177,13 @@ namespace WaveshareUARTFingerprintSensor
 
         public void Sleep()
         {
+            _sleeping = true;
             _rstPin.Write(GpioPinValue.Low);
         }
 
         public void Wake()
         {
+            _sleeping = false;
             _rstPin.Write(GpioPinValue.High);
         }
 
