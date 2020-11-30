@@ -378,6 +378,38 @@ namespace WaveshareUARTFingerprintSensor
             return true;
         }
 
+        public bool TryGetComparisonLevel(out byte comparisonLevel)
+        {
+            if (TrySendAndReceive(CommandType.ManageComparisonLevel, 0, 0, 1, out var response, 1000))
+            {
+                if (response.responseType == ResponseType.Success)
+                {
+                    comparisonLevel = response.second;
+
+                    return true;
+                }
+            }
+
+            comparisonLevel = default;
+
+            return false;
+        }
+
+        public bool TrySetComparisonLevel(byte comparisonLevel)
+        {
+            if (comparisonLevel < 0 || comparisonLevel > 9)
+            {
+                return false;
+            }
+
+            if (TrySendAndReceive(CommandType.ManageComparisonLevel, 0, comparisonLevel, 0, out var response, 1000))
+            {
+                return response.responseType == ResponseType.Success;
+            }
+
+            return false;
+        }
+
         public void Sleep()
         {
             _sleeping = true;
