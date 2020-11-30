@@ -75,6 +75,18 @@ namespace WaveshareUARTFingerprintSensor
             return checksum;
         }
 
+        private byte ComputeChecksumData(byte[] data, int length)
+        {
+            byte checksum = 0;
+
+            for (int i = 1; i < length + 1; i++)
+            {
+                checksum ^= data[i];
+            }
+
+            return checksum;
+        }
+
         private (byte first, byte second, ResponseType responseType) SendAndReceive(CommandType commandType, byte first, byte second, byte third, int timeout = DefaultTimeout)
         {
             if (_sleeping)
@@ -150,6 +162,30 @@ namespace WaveshareUARTFingerprintSensor
             }
 
             return true;
+        }
+
+        private byte[] ReadData(int length)
+        {
+            byte first = (byte)_serialPort.ReadByte();
+
+            if (first != PacketSeparator)
+            {
+                throw new InvalidDataException("Invalid response from the sensor");
+            }
+
+            byte[] data = new byte[length];
+
+            _serialPort.Read(data, 0, length);
+
+            byte checksum = (byte)_serialPort.ReadByte();
+            byte separator = (byte)_serialPort.ReadByte();
+
+            if (separator != PacketSeparator || checksum != ComputeChecksumData(data, length))
+            {
+                throw new InvalidDataException("Invalid checksum");
+            }
+
+            return data;
         }
 
         public uint QuerySerialNumber()
