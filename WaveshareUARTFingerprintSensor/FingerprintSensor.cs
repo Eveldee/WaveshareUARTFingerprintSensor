@@ -244,6 +244,13 @@ namespace WaveshareUARTFingerprintSensor
             return ResponseType.Success;
         }
 
+        /// <summary>
+        /// Although there is the word 'Add' in the command (in the official doc), it does not currently add the fingerprint
+        /// in the captor storage for whatever reason
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <param name="userPermission"></param>
+        /// <returns></returns>
         public (ResponseType responseType, byte[] eigenvalues) AddFingerprintAndAcquireEigenvalues(ushort userID, UserPermission userPermission)
         {
             if (userID > MaxUserID)
