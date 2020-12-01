@@ -398,6 +398,11 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        /// <summary>
+        /// Set comparison level used to compare fingerprints
+        /// </summary>
+        /// <param name="comparisonLevel">A value in 0..9 range, 9 is the strictest, default is 5</param>
+        /// <returns></returns>
         public bool TrySetComparisonLevel(byte comparisonLevel)
         {
             if (comparisonLevel < 0 || comparisonLevel > 9)
