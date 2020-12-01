@@ -166,6 +166,9 @@ namespace WaveshareUARTFingerprintSensor
 
         private byte[] ReadData(int length)
         {
+            // Needed to work
+            Thread.Sleep(150);
+
             byte first = (byte)_serialPort.ReadByte();
 
             if (first != PacketSeparator)
