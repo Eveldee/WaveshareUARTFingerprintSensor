@@ -20,6 +20,7 @@ namespace WaveshareUARTFingerprintSensor
         public const string SecondarySerialPort = "/dev/ttyS0";
         public const int DefaultTimeout = 10_000;
         public const int MaxUserID = 0xFFF;
+        public const int DataBufferSize = 4095;
 
         public event WakedEventHandler Waked;
         public delegate void WakedEventHandler(FingerprintSensor sender);
@@ -166,9 +167,6 @@ namespace WaveshareUARTFingerprintSensor
 
         private byte[] ReadData(int length)
         {
-            // Needed to work
-            Thread.Sleep(150);
-
             byte first = (byte)_serialPort.ReadByte();
 
             if (first != PacketSeparator)
@@ -178,7 +176,12 @@ namespace WaveshareUARTFingerprintSensor
 
             byte[] data = new byte[length];
 
-            _serialPort.Read(data, 0, length);
+            int offset = 0;
+            do
+            {
+                int toRead = length - offset > DataBufferSize ? DataBufferSize : length - offset;
+                offset += _serialPort.Read(data, offset, toRead);
+            } while (offset < length);
 
             byte checksum = (byte)_serialPort.ReadByte();
             byte separator = (byte)_serialPort.ReadByte();
