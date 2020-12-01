@@ -79,7 +79,7 @@ namespace WaveshareUARTFingerprintSensor
         {
             byte checksum = 0;
 
-            for (int i = 1; i < length + 1; i++)
+            for (int i = 1; i < length; i++)
             {
                 checksum ^= data[i];
             }
