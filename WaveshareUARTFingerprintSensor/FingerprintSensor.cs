@@ -347,7 +347,7 @@ namespace WaveshareUARTFingerprintSensor
         /// <returns></returns>
         public bool TryComparison1N(out (ushort userID, UserPermission permission) userInfo)
         {
-            if (TrySendAndReceive(CommandType.Comparison11, 0, 0, 0, out var response, 1000))
+            if (TrySendAndReceive(CommandType.Comparison1N, 0, 0, 0, out var response, 1000))
             {
                 if (response.responseType != ResponseType.NoUser && response.responseType != ResponseType.Timeout)
                 {
