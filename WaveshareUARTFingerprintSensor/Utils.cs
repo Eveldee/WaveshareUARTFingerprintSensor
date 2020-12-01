@@ -13,5 +13,7 @@ namespace WaveshareUARTFingerprintSensor
 
         public static (byte high, byte low) Split(ushort value) => ((byte)(value >> 8), (byte)(value & 0xFF));
         public static (byte first, byte second, byte third) Split(uint value) => ((byte)(value >> 16 & 0xFF), (byte)(value >> 8 & 0xFF), (byte)(value & 0xFF));
+
+        public static string ArrayDisplay<T>(T[] arr) => $"[ {string.Join(", ", arr)} ]";
     }
 }
