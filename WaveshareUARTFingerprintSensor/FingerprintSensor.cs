@@ -372,13 +372,13 @@ namespace WaveshareUARTFingerprintSensor
                 {
                     userPermission = (UserPermission)reponse.responseType;
 
-                    return true;
+                    return userPermission != 0;
                 }
             }
 
             userPermission = default;
 
-            return true;
+            return false;
         }
 
         public bool TryGetComparisonLevel(out byte comparisonLevel)
