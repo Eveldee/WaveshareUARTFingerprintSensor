@@ -471,6 +471,30 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        public bool TryAcquireUserEigenvalues(ushort userID, out Span<byte> eigenvalues, out UserPermission userPermission)
+        {
+            (byte high, byte low) = Utils.Split(userID);
+
+            if (TrySendAndReceive(CommandType.AcquireEigenvaluesDSP, high, low, 0, out var response))
+            {
+                if (response.responseType == ResponseType.Success)
+                {
+                    var length = Utils.Merge(response.first, response.second);
+
+                    var data = ReadData(length);
+                    eigenvalues = data.AsSpan(3);
+                    userPermission = (UserPermission)data[2];
+
+                    return true;
+                }
+            }
+
+            userPermission = default;
+            eigenvalues = Span<byte>.Empty;
+
+            return false;
+        }
+
         public void Sleep()
         {
             _sleeping = true;
