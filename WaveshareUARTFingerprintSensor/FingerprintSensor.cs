@@ -460,7 +460,7 @@ namespace WaveshareUARTFingerprintSensor
                 {
                     var length = Utils.Merge(response.first, response.second);
 
-                    eigenvalues = ReadData(length, skipChecksum: true).AsSpan(3);
+                    eigenvalues = ReadData(length).AsSpan(3);
 
                     return true;
                 }
