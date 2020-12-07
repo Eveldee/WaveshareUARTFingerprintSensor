@@ -165,7 +165,7 @@ namespace WaveshareUARTFingerprintSensor
             return true;
         }
 
-        private byte[] ReadData(int length)
+        private byte[] ReadData(int length, bool skipChecksum = false)
         {
             byte first = (byte)_serialPort.ReadByte();
 
@@ -186,7 +186,7 @@ namespace WaveshareUARTFingerprintSensor
             byte checksum = (byte)_serialPort.ReadByte();
             byte separator = (byte)_serialPort.ReadByte();
 
-            if (separator != PacketSeparator || checksum != ComputeChecksumData(data, length))
+            if (separator != PacketSeparator || (!skipChecksum && checksum != ComputeChecksumData(data, length)))
             {
                 throw new InvalidDataException("Invalid checksum");
             }
@@ -424,6 +424,25 @@ namespace WaveshareUARTFingerprintSensor
             {
                 return response.responseType == ResponseType.Success;
             }
+
+            return false;
+        }
+
+        public bool TryAcquireImage(out byte[] image)
+        {
+             if (TrySendAndReceive(CommandType.AcquireImage, 0, 0, 0, out var response))
+             {
+                if (response.responseType == ResponseType.Success)
+                {
+                    var length = Utils.Merge(response.first, response.second);
+
+                    image = ReadData(length, skipChecksum: true);
+
+                    return true;
+                }
+             }
+
+            image = default;
 
             return false;
         }
