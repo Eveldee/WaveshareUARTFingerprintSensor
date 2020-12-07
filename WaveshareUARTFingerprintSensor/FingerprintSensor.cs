@@ -254,11 +254,12 @@ namespace WaveshareUARTFingerprintSensor
         /// <param name="userID"></param>
         /// <param name="userPermission"></param>
         /// <returns></returns>
-        public (ResponseType responseType, byte[] eigenvalues) AddFingerprintAndAcquireEigenvalues(ushort userID, UserPermission userPermission)
+        public ResponseType AddFingerprintAndAcquireEigenvalues(ushort userID, UserPermission userPermission, out Span<byte> eigenvalues)
         {
             if (userID > MaxUserID)
             {
-                return (ResponseType.Full, null);
+                eigenvalues = Span<byte>.Empty;
+                return ResponseType.Full;
             }
 
             CommandType[] commands = { CommandType.AddFingerprint1, CommandType.AddFingerprint2 };
@@ -270,12 +271,14 @@ namespace WaveshareUARTFingerprintSensor
                 {
                     if (loopResponse.responseType != ResponseType.Success)
                     {
-                        return (loopResponse.responseType, null);
+                        eigenvalues = Span<byte>.Empty;
+                        return loopResponse.responseType;
                     }
                 }
                 else
                 {
-                    return (ResponseType.Timeout, null);
+                    eigenvalues = Span<byte>.Empty;
+                    return ResponseType.Timeout;
                 }
 
                 Thread.Sleep(50);
@@ -285,19 +288,21 @@ namespace WaveshareUARTFingerprintSensor
             {
                 if (response.responseType != ResponseType.Success)
                 {
-                    return (response.responseType, null);
+                    eigenvalues = Span<byte>.Empty;
+                    return response.responseType;
                 }
 
                 ushort length = Utils.Merge(response.first, response.second);
 
                 var data = ReadData(length);
-                var eigenvalues = data.Skip(3).ToArray();
+                eigenvalues = data.AsSpan(3);
 
-                return (ResponseType.Success, eigenvalues);
+                return ResponseType.Success;
             }
             else
             {
-                return (ResponseType.Timeout, null);
+                eigenvalues = Span<byte>.Empty;
+                return ResponseType.Timeout;
             }
         }
 
@@ -447,7 +452,7 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
-        public bool TryAcquireEigenvalues(out byte[] eigenvalues)
+        public bool TryAcquireEigenvalues(out Span<byte> eigenvalues)
         {
             if (TrySendAndReceive(CommandType.AcquireEigenvalues, 0, 0, 0, out var response))
             {
@@ -455,13 +460,13 @@ namespace WaveshareUARTFingerprintSensor
                 {
                     var length = Utils.Merge(response.first, response.second);
 
-                    eigenvalues = ReadData(length, skipChecksum: true).Skip(3).ToArray();
+                    eigenvalues = ReadData(length, skipChecksum: true).AsSpan(3);
 
                     return true;
                 }
             }
 
-            eigenvalues = default;
+            eigenvalues = Span<byte>.Empty;
 
             return false;
         }
