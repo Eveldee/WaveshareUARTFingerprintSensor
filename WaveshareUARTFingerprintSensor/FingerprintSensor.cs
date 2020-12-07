@@ -447,6 +447,25 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        public bool TryAcquireEigenvalues(out byte[] eigenvalues)
+        {
+            if (TrySendAndReceive(CommandType.AcquireEigenvalues, 0, 0, 0, out var response))
+            {
+                if (response.responseType == ResponseType.Success)
+                {
+                    var length = Utils.Merge(response.first, response.second);
+
+                    eigenvalues = ReadData(length, skipChecksum: true).Skip(3).ToArray();
+
+                    return true;
+                }
+            }
+
+            eigenvalues = default;
+
+            return false;
+        }
+
         public void Sleep()
         {
             _sleeping = true;
