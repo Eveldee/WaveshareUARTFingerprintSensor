@@ -15,13 +15,30 @@ namespace WaveshareUARTFingerprintSensor.Sample
     {
         static void Main(string[] args)
         {
-            var sensor = new FingerprintSensor(FingerprintSensor.PrimarySerialPort);
+            var sensor = new FingerprintSensor(FingerprintSensor.SecondarySerialPort);
 
             sensor.Start();
 
-            Console.WriteLine("Adding fingerprint");
+            Console.WriteLine("Here");
 
-            var response = sensor.AddFingerprint(40, UserPermission.Level3);
+            //if (sensor.TryAcquireUserEigenvalues(2, out var image, out var permission))
+            //{
+            //    Console.WriteLine(Utils.ArrayDisplay(image.ToArray()));
+            //}
+            if (sensor.TryGetUserCount(out var count))
+            {
+                Console.WriteLine(count);
+            }
+            //while (true)
+            //{
+            //    var resp = sensor.AddFingerprintAndAcquireEigenvalues(67, UserPermission.Level3);
+
+            //    Console.WriteLine(resp.responseType);
+            //    if (resp.responseType == ResponseType.Success)
+            //    {
+            //        Console.WriteLine(Utils.ArrayDisplay(resp.eigenvalues));
+            //    }
+            //}
 
             Console.WriteLine("End");
 
