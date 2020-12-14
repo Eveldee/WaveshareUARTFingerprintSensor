@@ -110,7 +110,13 @@ namespace WaveshareUARTFingerprintSensor
                 _serialPort.Write(buffer, 0, buffer.Length);
 
                 // Response
-                _serialPort.Read(buffer, 0, buffer.Length);
+                int length = buffer.Length;
+                int offset = 0;
+                do
+                {
+                    int toRead = length - offset;
+                    offset += _serialPort.Read(buffer, offset, toRead);
+                } while (offset < length);
 
                 if (buffer[0] != PacketSeparator || buffer[7] != PacketSeparator || buffer[1] != (byte)commandType)
                 {
