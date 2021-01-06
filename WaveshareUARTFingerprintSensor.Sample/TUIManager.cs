@@ -1,6 +1,7 @@
 ﻿using NStack;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,9 +11,13 @@ namespace WaveshareUARTFingerprintSensor.Sample
 {
     public class TUIManager : Toplevel
     {
+        public const string OutputFilePath = "out.txt";
+
         private readonly FingerprintSensor _fingerprintSensor;
         private Label _comparisonLevelLabel;
         private Label _userCountLabel;
+
+        private object _outputFileLock = new object();
 
         public TUIManager()
         {
@@ -173,31 +178,61 @@ namespace WaveshareUARTFingerprintSensor.Sample
 
         private void ReadImageButton_Clicked()
         {
-            if (_fingerprintSensor.TryAcquireImage(out var image))
+            var dialog = new FingerprintDialog("Acquire Image", "Can't acquire image, try to place your finger flat on the sensor");
+            byte[] image = null;
+
+            Task.Run(() =>
             {
+                if (_fingerprintSensor.TryAcquireImage(out image))
+                {
+                    dialog.Cancel();
+                }
+                else
+                {
+                    dialog.CancelAndShowError();
+                }
+            });
+
+            dialog.Show();
+
+            if (image != null)
+            {
+                WriteOut($"Image:\n{Utils.ArrayDisplay(image)}\n\n\n");
+
                 var window = new DataDisplay("Image", image.ToArray());
 
                 Application.Run(window);
-            }
-            else
-            {
-                MessageBox.ErrorQuery("Acquire Image", "Can't acquire image, try to place your finger flat on the sensor", "Ok");
             }
         }
 
         private void ReadEigenvaluesButton_Clicked()
         {
-            // TODO Fingerprint popup to know it is waiting for a fingerprint
+            var dialog = new FingerprintDialog("Acquire Eigenvalues", "Can't acquire eigenvalues, try to place your finger flat on the sensor");
+            byte[] eigenvalues = null;
 
-            if (_fingerprintSensor.TryAcquireEigenvalues(out var eigenvalues))
+            Task.Run(() =>
             {
-                var window = new DataDisplay("Eigenvalues", eigenvalues.ToArray());
+                if (_fingerprintSensor.TryAcquireEigenvalues(out var values))
+                {
+                    eigenvalues = values.ToArray();
+
+                    dialog.Cancel();
+                }
+                else
+                {
+                    dialog.CancelAndShowError();
+                }
+            });
+
+            dialog.Show();
+
+            if (eigenvalues != null)
+            {
+                var window = new DataDisplay("Eigenvalues", eigenvalues);
+
+                 WriteOut($"Eigenvalues:\n{Utils.ArrayDisplay(eigenvalues)}\n\n\n");
 
                 Application.Run(window);
-            }
-            else
-            {
-                MessageBox.ErrorQuery("Acquire Eigenvalues", "Can't acquire eigenvalues, try to place your finger flat on the sensor", "Ok");
             }
         }
 
@@ -242,21 +277,95 @@ namespace WaveshareUARTFingerprintSensor.Sample
 
         private void AddFingerprintButton_Clicked()
         {
-            if (new EntryDialog("User id", i => int.TryParse(i.ToString(), out var n), "Need to be a valid user id").TryShow(out var input))
+            if (new EntryDialog("User id", i => ushort.TryParse(i.ToString(), out var n), "Need to be a valid user id").TryShow(out var input))
             {
-                Console.WriteLine(input);
-                // TODO
+                var dialog = new FingerprintDialog("Add Fingerprint", "Can't add fingerprint, try to place your finger flat on the sensor");
+
+                Task.Run(() =>
+                {
+                    switch (_fingerprintSensor.AddFingerprint(ushort.Parse(input.ToString()), UserPermission.Level1))
+                    {
+                        case ResponseType.Success:
+                            dialog.Cancel();
+
+                            Application.MainLoop.Invoke(() => MessageBox.Query("Add Fingerprint", "Successfully added fingerprint", "Ok"));
+
+                            break;
+                        case ResponseType.Full:
+                            dialog.ErrorMessage = "Sensor full, can't add more users";
+
+                            dialog.CancelAndShowError();
+
+                            break;
+                        case ResponseType.NoUser:
+                            dialog.ErrorMessage = "Can't add fingerprint, invalid id";
+
+                            dialog.CancelAndShowError();
+
+                            break;
+                        case ResponseType.FingerOccupied:
+                            dialog.ErrorMessage = "Can't add fingerprint, finger already registered";
+
+                            dialog.CancelAndShowError();
+
+                            break;
+                        case ResponseType.UserOccupied:
+                            dialog.ErrorMessage = "Can't add fingerprint, id already used";
+
+                            dialog.CancelAndShowError();
+
+                            break;
+                        default:
+                            dialog.CancelAndShowError();
+                            break;
+                    }
+                });
+
+                dialog.Show();
+
+                UpdateUserCount();
             }
         }
 
         private void ReadFingerprintButton_Clicked()
         {
-            //TODO
+            var dialog = new FingerprintDialog("Read Fingerprint", "Can't read fingerprint, try to place your finger flat on the sensor");
+
+            (ushort userID, UserPermission permission) userInfo = default;
+
+            Task.Run(() =>
+            {
+                if (_fingerprintSensor.TryComparison1N(out userInfo))
+                {
+                    dialog.Cancel();
+                }
+                else
+                {
+                    dialog.CancelAndShowError();
+                }
+            });
+
+            dialog.Show();
+
+            if (userInfo != default)
+            {
+                MessageBox.Query("Read Fingerprint", $"Successfully read fingerprint\n\nUser ID: {userInfo.userID}\nPermissions: {userInfo.permission}\n ", "Ok");
+            }
         }
 
         private void UserCountButton_Clicked()
         {
             UpdateUserCount();
+        }
+        private void WriteOut(string text)
+        {
+            Task.Run(() =>
+            {
+                lock (_outputFileLock)
+                {
+                    File.AppendAllText(OutputFilePath, text);
+                }
+            });
         }
 
         private void ResetConfig()

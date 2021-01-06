@@ -101,6 +101,7 @@
   <ItemGroup>
     <Compile Include="DataDisplay.cs" />
     <Compile Include="EntryDialog.cs" />
+    <Compile Include="FingerprintDialog.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TUIManager.cs" />
