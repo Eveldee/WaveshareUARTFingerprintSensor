@@ -353,7 +353,7 @@ namespace WaveshareUARTFingerprintSensor
         {
             (byte high, byte low) = Utils.Split(userID);
 
-            if (TrySendAndReceive(CommandType.Comparison11, high, low, 0, out var response, 1000))
+            if (TrySendAndReceive(CommandType.Comparison11, high, low, 0, out var response))
             {
                 return response.responseType == ResponseType.Success;
             }
@@ -368,7 +368,7 @@ namespace WaveshareUARTFingerprintSensor
         /// <returns></returns>
         public bool TryComparison1N(out (ushort userID, UserPermission permission) userInfo)
         {
-            if (TrySendAndReceive(CommandType.Comparison1N, 0, 0, 0, out var response, 1000))
+            if (TrySendAndReceive(CommandType.Comparison1N, 0, 0, 0, out var response))
             {
                 if (response.responseType != ResponseType.NoUser && response.responseType != ResponseType.Timeout)
                 {
