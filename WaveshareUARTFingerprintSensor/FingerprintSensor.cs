@@ -511,6 +511,10 @@ namespace WaveshareUARTFingerprintSensor
         {
             _sleeping = false;
             _rstPin.Write(GpioPinValue.High);
+
+            // Needed after wake to really wake the sensor
+            // Because the first command always fail for whatever reason
+            TryGetUserCount(out var _);
         }
 
         private void OnWake()
