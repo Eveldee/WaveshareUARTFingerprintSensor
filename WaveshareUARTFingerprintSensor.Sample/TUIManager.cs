@@ -264,7 +264,9 @@ namespace WaveshareUARTFingerprintSensor.Sample
 
         private void SleepButton_Clicked()
         {
-            //TODO
+            var window = new SleepDisplay(_fingerprintSensor);
+
+            Application.Run(window);
         }
 
         private void ClearFingerprintsButton_Clicked()
