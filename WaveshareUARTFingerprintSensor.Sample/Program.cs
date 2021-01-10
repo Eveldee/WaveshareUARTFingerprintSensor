@@ -14,14 +14,8 @@ namespace WaveshareUARTFingerprintSensor.Sample
 {
     class Program
     {
-        public static FingerprintSensor FingerprintSensor { get; private set; }
-
         static void Main(string[] args)
         {
-            FingerprintSensor = new FingerprintSensor(FingerprintSensor.SecondarySerialPort);
-
-            FingerprintSensor.Start();
-
             Application.Run<TUIManager>();
         }
     }

@@ -12,8 +12,10 @@ namespace WaveshareUARTFingerprintSensor.Sample
     public class TUIManager : Toplevel
     {
         public const string OutputFilePath = "out.txt";
+        public const string SettingsFilePath = "settings.txt";
 
-        private readonly FingerprintSensor _fingerprintSensor;
+        private FingerprintSensor _fingerprintSensor;
+        private Label _serialPortLabel;
         private Label _comparisonLevelLabel;
         private Label _userCountLabel;
 
@@ -21,8 +23,6 @@ namespace WaveshareUARTFingerprintSensor.Sample
 
         public TUIManager()
         {
-            _fingerprintSensor = Program.FingerprintSensor;
-
             Init();
         }
 
@@ -48,7 +48,7 @@ namespace WaveshareUARTFingerprintSensor.Sample
             // Creates a menubar, the item "New" has a help menu.
             var menu = new MenuBar(new MenuBarItem[] {
                 new MenuBarItem ("_Options", new MenuItem [] {
-                    new MenuItem ("Reset Config", "", () => { ResetConfig(); }),
+                    new MenuItem ("_Change Config", "", () => { ChangeConfig(); }),
                     new MenuItem ("_Quit", "", () => { Application.RequestStop(); })
                 })
             });
@@ -56,10 +56,16 @@ namespace WaveshareUARTFingerprintSensor.Sample
             Add(menu);
 
             // Window Content
-            _comparisonLevelLabel = new Label("Comparison Level: 0")
+            _serialPortLabel = new Label("Serial Port:")
             {
                 X = 2,
                 Y = 1,
+                Width = Dim.Fill()
+            };
+            _comparisonLevelLabel = new Label("Comparison Level: 0")
+            {
+                X = Pos.Left(_serialPortLabel),
+                Y = Pos.Bottom(_serialPortLabel),
                 Width = Dim.Fill()
             };
             _userCountLabel = new Label("Users: 0")
@@ -140,6 +146,7 @@ namespace WaveshareUARTFingerprintSensor.Sample
             quitButton.Clicked += Quit_Clicked;
 
             win.Add(
+                _serialPortLabel,
                 _comparisonLevelLabel,
                 _userCountLabel,
                 userCountButton,
@@ -154,10 +161,30 @@ namespace WaveshareUARTFingerprintSensor.Sample
                 quitButton
             );
 
+            // Init Sensor
+            if (!File.Exists(SettingsFilePath))
+            {
+                Application.Run(new SettingsDisplay());
+            }
+
+            InitSensor();
+
+            // Update gui
+            UpdateSerialPort();
             UpdateUserCount();
             UpdateComparisonLevel();
+        }
 
-            // TODO Config at first start
+        private void UpdateSerialPort()
+        {
+            _serialPortLabel.Text = $"Serial Port: {_fingerprintSensor.PortName}";
+        }
+
+        private void InitSensor()
+        {
+            _fingerprintSensor = new FingerprintSensor(File.ReadAllText(SettingsFilePath));
+
+            _fingerprintSensor.Start();
         }
 
         private void UpdateUserCount()
@@ -370,11 +397,15 @@ namespace WaveshareUARTFingerprintSensor.Sample
             });
         }
 
-        private void ResetConfig()
+        private void ChangeConfig()
         {
-            MessageBox.Query("Reset Config", "Config reset", "OK");
+            File.Delete(SettingsFilePath);
 
-            //TODO
+            Application.Run(new SettingsDisplay());
+
+            InitSensor();
+
+            UpdateSerialPort();
         }
 
         private void Quit_Clicked()

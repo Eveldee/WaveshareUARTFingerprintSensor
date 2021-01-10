@@ -104,6 +104,7 @@
     <Compile Include="FingerprintDialog.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SettingsDisplay.cs" />
     <Compile Include="SleepDisplay.cs" />
     <Compile Include="TUIManager.cs" />
   </ItemGroup>
