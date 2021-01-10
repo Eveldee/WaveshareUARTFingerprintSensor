@@ -26,7 +26,7 @@ namespace WaveshareUARTFingerprintSensor.Sample
             ColorScheme = Colors.TopLevel;
 
             // Creates the top-level window to show
-            var win = new Window("TUIManager")
+            var win = new Window(_title)
             {
                 X = 0,
                 Y = 0,
