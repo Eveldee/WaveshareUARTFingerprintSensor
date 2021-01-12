@@ -39,7 +39,7 @@ it may be different for you
 | Pi Zero   | Primary (/dev/ttyAMA0) |
 | Pi Zero W | Secondary (/dev/ttyS0) |
 | Pi 1      | Primary (/dev/ttyAMA0) |
-| Pi 2      | Primary (/dev/ttyAMA0)   |
+| Pi 2      | Primary (/dev/ttyAMA0) |
 | Pi 3      | Secondary (/dev/ttyS0) |
 | Pi Zero 4 | Secondary (/dev/ttyS0) |
 
