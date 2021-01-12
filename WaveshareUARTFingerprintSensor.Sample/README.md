@@ -17,6 +17,6 @@ You can compile it using any **C# IDE** that supports **.Net Framework** or by r
 
 ## Copyright and license
 
-*[**WaveshareUARTFingerprintSensor**](../README.md)* library is licensed under the [MIT License](../LICENSE).
+[**WaveshareUARTFingerprintSensor**](../README.md) library is licensed under the [MIT License](../LICENSE).
 
-*[**gui.cs**](https://github.com/migueldeicaza/gui.cs/)* library is under the [MIT License](https://github.com/migueldeicaza/gui.cs/blob/master/LICENSE).
+[**gui.cs**](https://github.com/migueldeicaza/gui.cs/) library is under the [MIT License](https://github.com/migueldeicaza/gui.cs/blob/master/LICENSE).
