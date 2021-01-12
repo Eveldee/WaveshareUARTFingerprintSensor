@@ -34,6 +34,7 @@ if (sensor.TryGetUserCount(out ushort count))
 
 Here is a table of which serial port to use on which Raspberry Pi,
 it may be different for you
+
 | Model     | Port                   |
 | --------- | ---------------------- |
 | Pi Zero   | Primary (/dev/ttyAMA0) |
