@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // Les informations générales relatives à un assembly dépendent de
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
-[assembly: AssemblyTitle("WaveshareUARTFingerprintSensor")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Waveshare UART Fingerprint Sensor (C)")]
+[assembly: AssemblyDescription("C# library for the Waveshare UART fingerprint sensor (C)")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Ilyx")]
 [assembly: AssemblyProduct("WaveshareUARTFingerprintSensor")]
-[assembly: AssemblyCopyright("Copyright ©  2020")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

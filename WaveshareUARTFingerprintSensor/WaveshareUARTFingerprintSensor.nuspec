@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>Waveshare UART Fingerprint Sensor</title>
+    <authors>Eveldee</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/Eveldee/WaveshareUARTFingerprintSensor</projectUrl>
+    <!-- <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl> -->
+    <description>C# library for the Waveshare UART fingerprint sensor (C)</description>
+    <releaseNotes>Initial version.</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>Fingerprint Sensor Waveshare UART</tags>
+  </metadata>
+</package>
