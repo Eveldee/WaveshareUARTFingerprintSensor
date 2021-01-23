@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Terminal.Gui;
 
-namespace WaveshareUARTFingerprintSensor.Sample
+namespace WaveshareUARTFingerprintSensor.Sample.Views
 {
     public class EntryDialog : Dialog
     {

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Terminal.Gui;
 
-namespace WaveshareUARTFingerprintSensor.Sample
+namespace WaveshareUARTFingerprintSensor.Sample.Views
 {
     public class SleepDisplay : Toplevel
     {

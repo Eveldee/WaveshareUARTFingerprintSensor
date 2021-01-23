@@ -99,14 +99,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataDisplay.cs" />
-    <Compile Include="EntryDialog.cs" />
-    <Compile Include="FingerprintDialog.cs" />
+    <Compile Include="Views\DataDisplay.cs" />
+    <Compile Include="Views\EntryDialog.cs" />
+    <Compile Include="Views\FingerprintDialog.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SettingsDisplay.cs" />
-    <Compile Include="SleepDisplay.cs" />
-    <Compile Include="TUIManager.cs" />
+    <Compile Include="Views\SettingsDisplay.cs" />
+    <Compile Include="Views\SleepDisplay.cs" />
+    <Compile Include="Views\TUIManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
