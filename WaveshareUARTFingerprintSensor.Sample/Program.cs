@@ -9,6 +9,7 @@ using Terminal.Gui;
 using Unosquare.RaspberryIO;
 using Unosquare.RaspberryIO.Abstractions;
 using Unosquare.WiringPi;
+using WaveshareUARTFingerprintSensor.Sample.Views;
 
 namespace WaveshareUARTFingerprintSensor.Sample
 {
