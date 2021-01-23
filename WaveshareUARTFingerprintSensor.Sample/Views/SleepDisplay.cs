@@ -29,6 +29,8 @@ namespace WaveshareUARTFingerprintSensor.Sample.Views
 
         private void Init()
         {
+            Modal = true;
+
             ColorScheme = Colors.Error;
 
             // Creates the top-level window to show

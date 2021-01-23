@@ -23,6 +23,8 @@ namespace WaveshareUARTFingerprintSensor.Sample.Views
 
         private void Init()
         {
+            Modal = true;
+
             ColorScheme = Colors.TopLevel;
 
             // Creates the top-level window to show
