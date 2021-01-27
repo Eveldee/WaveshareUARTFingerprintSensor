@@ -4,6 +4,8 @@ A sample app for the [Waveshare UART fingerprint sensor (C) library](../README.m
 
 ![Sample](../Sample.png)
 
+[![asciicast](https://asciinema.org/a/U1cBQzJ3ueFyN0urkh2NRcjB9.svg)](https://asciinema.org/a/U1cBQzJ3ueFyN0urkh2NRcjB9)
+
 ## Build
 
 You can compile it using any **C# IDE** that supports **.Net Framework** or by running
