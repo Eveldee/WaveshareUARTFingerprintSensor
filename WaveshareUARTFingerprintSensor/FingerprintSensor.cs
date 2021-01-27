@@ -16,17 +16,45 @@ namespace WaveshareUARTFingerprintSensor
 {
     public class FingerprintSensor : IDisposable
     {
+        /// <summary>
+        /// Primary serial port on the RPI. <see href="https://www.raspberrypi.org/documentation/configuration/uart.md">Source</see>
+        /// </summary>
         public const string PrimarySerialPort = "/dev/ttyAMA0";
+        /// <summary>
+        /// Secondary serial port on the RPI. <see href="https://www.raspberrypi.org/documentation/configuration/uart.md">Source</see>
+        /// </summary>
         public const string SecondarySerialPort = "/dev/ttyS0";
+        /// <summary>
+        /// Timeout used for the <see cref="SerialPort"/> I/O operations
+        /// </summary>
         public const int DefaultTimeout = 10_000;
+        /// <summary>
+        /// Maximum number of user that the sensor can store before throwing <see cref="ResponseType.Full"/>. It is also the ID of the last user
+        /// </summary>
         public const int MaxUserID = 0xFFF;
+        /// <summary>
+        /// Internal buffer size
+        /// </summary>
         public const int DataBufferSize = 4095;
 
+        /// <summary>
+        /// Thrown when "WAKE" pin is high, works like a press button. Can be used while the sensor is asleep
+        /// </summary>
         public event WakedEventHandler Waked;
+        /// <summary>
+        /// Delegate for the <see cref="Waked"/> event
+        /// </summary>
+        /// <param name="sender"></param>
         public delegate void WakedEventHandler(FingerprintSensor sender);
 
+        /// <summary>
+        /// <see cref="SerialPort"/> name/path used
+        /// </summary>
         public string PortName { get; }
 
+        /// <summary>
+        /// Mark the end of a command packet, usually the 8th byte
+        /// </summary>
         private const byte PacketSeparator = 0xF5;
 
         private SerialPort _serialPort;
@@ -37,6 +65,12 @@ namespace WaveshareUARTFingerprintSensor
         private bool _sleeping = false;
         private readonly object _lock = new object();
 
+        /// <summary>
+        /// Create a new instance of <see cref="FingerprintSensor"/>, don't forget to call <see cref="Start"/> before using any command
+        /// </summary>
+        /// <param name="portName">A valid name/path to a serial port, see <see cref="PrimarySerialPort"/> and <see cref="SecondarySerialPort"/> for the RPI</param>
+        /// <param name="wakePin">WAKE <see cref="GpioPin"/> number, default is according to the sensor documentation wiring</param>
+        /// <param name="rstPin">RST <see cref="GpioPin"/> number, default is according to the sensor documentation wiring</param>
         public FingerprintSensor(string portName, int wakePin = 23, int rstPin = 24)
         {
             PortName = portName;
@@ -44,6 +78,9 @@ namespace WaveshareUARTFingerprintSensor
             _rstPinNumber = rstPin;
         }
 
+        /// <summary>
+        /// Start the sensor, initializing <see cref="BootstrapWiringPi"/>, the Gpio pins and the <see cref="SerialPort"/>
+        /// </summary>
         public void Start()
         {
             // Initialize Gpio
@@ -64,6 +101,11 @@ namespace WaveshareUARTFingerprintSensor
             _serialPort.Open();
         }
 
+        /// <summary>
+        /// Compute the checksum for a command packet: XOR of <see cref="byte"/> 1 to 5 (counting from 0)
+        /// </summary>
+        /// <param name="data">A command packet, usually 8 bytes</param>
+        /// <returns>The computed checksum, usually stored in the 6th <see cref="byte"/></returns>
         private byte ComputeChecksum(byte[] data)
         {
             byte checksum = 0;
@@ -76,6 +118,12 @@ namespace WaveshareUARTFingerprintSensor
             return checksum;
         }
 
+        /// <summary>
+        /// Compute the checksum for a data packet: XOR of <see cref="byte"/> 1 to (last - 2) (counting from 0)
+        /// </summary>
+        /// <param name="data">A data, not to be confused with a command packet</param>
+        /// <param name="length">Length of the data packet, should be 2 bytes less than data.Length</param>
+        /// <returns>The computed checksum, usually stored in the (last - 2)th byte</returns>
         private byte ComputeChecksumData(byte[] data, int length)
         {
             byte checksum = 0;
@@ -88,6 +136,15 @@ namespace WaveshareUARTFingerprintSensor
             return checksum;
         }
 
+        /// <summary>
+        /// Send an 8 <see cref="byte"/> command and read the response, can throw an <see cref="Exception"/>
+        /// </summary>
+        /// <param name="commandType">Command flag, see <see cref="CommandType"/></param>
+        /// <param name="first">First data <see cref="byte"/>, the 2th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="second">Second data <see cref="byte"/>, the 3th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="third">Third data <see cref="byte"/>, the 4th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="timeout">Timeout used for the <see cref="SerialPort"/>, default to <see cref="DefaultTimeout"/></param>
+        /// <returns>The 3 data <see cref="byte"/> from the response (2, 3 and 4), the third one is parsed as a <see cref="ResponseType"/></returns>
         private (byte first, byte second, ResponseType responseType) SendAndReceive(CommandType commandType, byte first, byte second, byte third, int timeout = DefaultTimeout)
         {
             if (_sleeping)
@@ -132,6 +189,15 @@ namespace WaveshareUARTFingerprintSensor
             return (buffer[2], buffer[3], (ResponseType)buffer[4]);
         }
 
+        /// <summary>
+        /// Send an 8 <see cref="byte"/> command and read the response, can throw an <see cref="Exception"/>
+        /// </summary>
+        /// <param name="commandType">Command flag, see <see cref="CommandType"/></param>
+        /// <param name="first">First data <see cref="byte"/>, the 2th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="second">Second data <see cref="byte"/>, the 3th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="third">Third data <see cref="byte"/>, the 4th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="timeout">Timeout used for the <see cref="SerialPort"/>, default to <see cref="DefaultTimeout"/></param>
+        /// <returns>The 3 data <see cref="byte"/> from the response (2, 3 and 4)</returns>
         private (byte first, byte second, byte third) SendAndReceiveRaw(CommandType commandType, byte first, byte second, byte third, int timeout = DefaultTimeout)
         {
             (byte f, byte s, ResponseType response) = SendAndReceive(commandType, first, second, third, timeout);
@@ -139,6 +205,16 @@ namespace WaveshareUARTFingerprintSensor
             return (f, s, (byte)response);
         }
 
+        /// <summary>
+        /// Send an 8 <see cref="byte"/> command and read the response without throwing an <see cref="Exception"/>
+        /// </summary>
+        /// <param name="commandType">Command flag, see <see cref="CommandType"/></param>
+        /// <param name="first">First data <see cref="byte"/>, the 2th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="second">Second data <see cref="byte"/>, the 3th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="third">Third data <see cref="byte"/>, the 4th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="response">The response as returned by <see cref="SendAndReceive(CommandType, byte, byte, byte, int)"/></param>
+        /// <param name="timeout">Timeout used for the <see cref="SerialPort"/>, default to <see cref="DefaultTimeout"/></param>
+        /// <returns>true if successful, false otherwise</returns>
         private bool TrySendAndReceive(CommandType commandType, byte first, byte second, byte third, out (byte first, byte second, ResponseType responseType) response, int timeout = DefaultTimeout)
         {
             try
@@ -155,6 +231,16 @@ namespace WaveshareUARTFingerprintSensor
             return true;
         }
 
+        /// <summary>
+        /// Send an 8 <see cref="byte"/> command and read the response without throwing an <see cref="Exception"/>
+        /// </summary>
+        /// <param name="commandType">Command flag, see <see cref="CommandType"/></param>
+        /// <param name="first">First data <see cref="byte"/>, the 2th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="second">Second data <see cref="byte"/>, the 3th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="third">Third data <see cref="byte"/>, the 4th <see cref="byte"/> (counting from 0)</param>
+        /// <param name="response">The response as returned by <see cref="SendAndReceive(CommandType, byte, byte, byte, int)"/></param>
+        /// <param name="timeout">Timeout used for the <see cref="SerialPort"/>, default to <see cref="DefaultTimeout"/></param>
+        /// <returns>true if successful, false otherwise</returns>
         private bool TrySendAndReceiveRaw(CommandType commandType, byte first, byte second, byte third, out (byte first, byte second, byte third) response, int timeout = DefaultTimeout)
         {
             try
@@ -171,6 +257,12 @@ namespace WaveshareUARTFingerprintSensor
             return true;
         }
 
+        /// <summary>
+        /// Read a data packet
+        /// </summary>
+        /// <param name="length">The length of the data packet</param>
+        /// <param name="skipChecksum">An invalid checksum will throw an <see cref="Exception"/>, use this to ignore the checksum</param>
+        /// <returns></returns>
         private byte[] ReadData(int length, bool skipChecksum = false)
         {
             byte first = (byte)_serialPort.ReadByte();
@@ -200,6 +292,10 @@ namespace WaveshareUARTFingerprintSensor
             return data;
         }
 
+        /// <summary>
+        /// Query the sensor serial number
+        /// </summary>
+        /// <returns></returns>
         public uint QuerySerialNumber()
         {
             (byte first, byte second, byte third) = SendAndReceiveRaw(CommandType.QuerySerialNumber, 0, 0, 0);
@@ -207,6 +303,11 @@ namespace WaveshareUARTFingerprintSensor
             return Utils.Merge(first, second, third);
         }
 
+        /// <summary>
+        /// Get the number of registered users (fingerprints)
+        /// </summary>
+        /// <param name="count">User count if the command is successful</param>
+        /// <returns></returns>
         public bool TryGetUserCount(out ushort count)
         {
             if (TrySendAndReceive(CommandType.QueryUserCount, 0, 0, 0, out var response, 1000))
@@ -223,6 +324,12 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        /// <summary>
+        /// Add a fingerprint by sending three commands, with a delay between each to ensure the fingerprint is perfectly read
+        /// </summary>
+        /// <param name="userID">The id where to store the user (fingerprint)</param>
+        /// <param name="userPermission">The <see cref="UserPermission"/> to store</param>
+        /// <returns></returns>
         public ResponseType AddFingerprint(ushort userID, UserPermission userPermission)
         {
             if (userID > MaxUserID)
@@ -312,6 +419,11 @@ namespace WaveshareUARTFingerprintSensor
             }
         }
 
+        /// <summary>
+        /// Delete a user (fingerprint) from the sensor
+        /// </summary>
+        /// <param name="userID">A valid user (fingerprint) id</param>
+        /// <returns>true if successful, false otherwise</returns>
         public bool DeleteUser(ushort userID)
         {
             (byte high, byte low) = Utils.Split(userID);
@@ -324,6 +436,10 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        /// <summary>
+        /// Delete all users (fingerprints) from the sensor
+        /// </summary>
+        /// <returns>true if successful, false otherwise</returns>
         public bool DeleteAllUsers()
         {
             if (TrySendAndReceive(CommandType.DeleteAllUsers, 0, 0, 0, out var response, 1000))
@@ -334,6 +450,11 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        /// <summary>
+        /// Delete all users that match a specified <see cref="UserPermission"/>
+        /// </summary>
+        /// <param name="userPermission"></param>
+        /// <returns>true if successful, false otherwise</returns>
         public bool DeleteAllUsersWithPermission(UserPermission userPermission)
         {
             if (TrySendAndReceive(CommandType.DeleteAllUsers, 0, 0, (byte)userPermission, out var response, 1000))
@@ -348,7 +469,7 @@ namespace WaveshareUARTFingerprintSensor
         /// Read a fingerprint and check if it matches with the specified user
         /// </summary>
         /// <param name="userID">A registered user ID</param>
-        /// <returns></returns>
+        /// <returns>true if the fingerprint match</returns>
         public bool Comparison11(ushort userID)
         {
             (byte high, byte low) = Utils.Split(userID);
@@ -365,7 +486,7 @@ namespace WaveshareUARTFingerprintSensor
         /// Read a fingerprint and check if it match with any registered user
         /// </summary>
         /// <param name="userInfo">The matched user info</param>
-        /// <returns></returns>
+        /// <returns>true if the fingerprint match</returns>
         public bool TryComparison1N(out (ushort userID, UserPermission permission) userInfo)
         {
             if (TrySendAndReceive(CommandType.Comparison1N, 0, 0, 0, out var response))
@@ -383,6 +504,12 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        /// <summary>
+        /// Get the stored <see cref="UserPermission"/> for a user
+        /// </summary>
+        /// <param name="userID">A registered user</param>
+        /// <param name="userPermission"></param>
+        /// <returns>true if the user exist, false otherwise</returns>
         public bool TryQueryPermission(ushort userID, out UserPermission userPermission)
         {
             (byte high, byte low) = Utils.Split(userID);
@@ -402,6 +529,11 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        /// <summary>
+        /// Retrieve the comparison level used internally by the sensor to compare fingerprints
+        /// </summary>
+        /// <param name="comparisonLevel"></param>
+        /// <returns></returns>
         public bool TryGetComparisonLevel(out byte comparisonLevel)
         {
             if (TrySendAndReceive(CommandType.ManageComparisonLevel, 0, 0, 1, out var response, 1000))
@@ -420,7 +552,7 @@ namespace WaveshareUARTFingerprintSensor
         }
 
         /// <summary>
-        /// Set comparison level used to compare fingerprints
+        /// Set the comparison level used internally by the sensor to compare fingerprints
         /// </summary>
         /// <param name="comparisonLevel">A value in 0..9 range, 9 is the strictest, default is 5</param>
         /// <returns></returns>
@@ -439,6 +571,11 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        /// <summary>
+        /// Read a fingerprint and retrieve it's raw image
+        /// </summary>
+        /// <param name="image"></param>
+        /// <returns>true if a valid fingerprint has been read</returns>
         public bool TryAcquireImage(out byte[] image)
         {
              if (TrySendAndReceive(CommandType.AcquireImage, 0, 0, 0, out var response))
@@ -458,6 +595,11 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        /// <summary>
+        /// Read a fingerprint and retrieve the sensor computed eigenvalues
+        /// </summary>
+        /// <param name="eigenvalues"></param>
+        /// <returns>true if a valid fingerprint has been read</returns>
         public bool TryAcquireEigenvalues(out Span<byte> eigenvalues)
         {
             if (TrySendAndReceive(CommandType.AcquireEigenvalues, 0, 0, 0, out var response))
@@ -477,6 +619,13 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        /// <summary>
+        /// Retrieve the sensor computed eigenvalues from a registered user
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <param name="eigenvalues"></param>
+        /// <param name="userPermission"></param>
+        /// <returns></returns>
         public bool TryAcquireUserEigenvalues(ushort userID, out Span<byte> eigenvalues, out UserPermission userPermission)
         {
             (byte high, byte low) = Utils.Split(userID);
@@ -501,12 +650,20 @@ namespace WaveshareUARTFingerprintSensor
             return false;
         }
 
+        /// <summary>
+        /// Make the sensor sleep, in this mode the sensor use less power (&lt;16 µA) but won't answer commands until it is waked using <see cref="Wake"/>.
+        /// <para/>
+        /// You can know when to wake the sensor using the <see cref="Waked"/> event that is still triggered while asleep
+        /// </summary>
         public void Sleep()
         {
             _sleeping = true;
             _rstPin.Write(GpioPinValue.Low);
         }
 
+        /// <summary>
+        /// Wake the sensor, do nothing if it was not sleeping
+        /// </summary>
         public void Wake()
         {
             _sleeping = false;
@@ -525,6 +682,9 @@ namespace WaveshareUARTFingerprintSensor
             }
         }
 
+        /// <summary>
+        /// Dispose by disposing the <see cref="SerialPort"/> used
+        /// </summary>
         public void Dispose()
         {
             _serialPort.Close();

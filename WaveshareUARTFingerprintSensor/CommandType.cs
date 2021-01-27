@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace WaveshareUARTFingerprintSensor
 {
+    /// <summary>
+    /// Command flags recognized by the sensor
+    /// </summary>
     public enum CommandType : byte
     {
         ModifySerialNumber = 0x08,
