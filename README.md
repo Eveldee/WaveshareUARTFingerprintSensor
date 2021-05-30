@@ -42,7 +42,7 @@ it may be different for you
 | Pi 1      | Primary (/dev/ttyAMA0) |
 | Pi 2      | Primary (/dev/ttyAMA0) |
 | Pi 3      | Secondary (/dev/ttyS0) |
-| Pi Zero 4 | Secondary (/dev/ttyS0) |
+| Pi 4      | Secondary (/dev/ttyS0) |
 
 > The Secondary UART is **disabled by default**, you an activate it in `raspi-config`  
 > [**Source**](https://www.raspberrypi.org/documentation/configuration/uart.md)
